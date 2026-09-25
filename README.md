@@ -1,72 +1,37 @@
 # 🎬 Subtitle Shifter
 
-<p align="center">
-  <strong>Fix out-of-sync subtitles directly from your phone or browser.</strong>
-</p>
+A lightweight self-hosted web app for permanently shifting `.srt` subtitle timing from any browser.
 
-<p align="center">
-  A lightweight self-hosted web app for permanently shifting <code>.srt</code> subtitle timing without SSH, terminal commands, or manually entering file paths.
-</p>
+## 🌐 Languages
 
-<p align="center">
-  Built for Jellyfin, Plex, Emby, and other self-hosted media servers.
-</p>
+Subtitle Shifter supports:
 
----
+- English
+- Srpski
 
-## ✨ Features
+Use the language selector in the top-right corner. The selection is saved in your browser. On first visit, browsers configured for Serbian, Bosnian, or Croatian start in Serbian; other browsers start in English.
 
-- 🔍 Automatically finds all `.srt` subtitle files in your media library
-- 📱 Mobile-friendly web interface
-- 🎞️ Works with both movies and TV shows
-- ⏪ Shift subtitles earlier
-- ⏩ Shift subtitles later
-- ⚡ Quick adjustment buttons
-- 🎯 Custom offset support
-- 👀 Built-in subtitle preview
-- 💾 Automatic `.bak` backup before the first modification
-- ♻️ Restore the original subtitle with one click
-- 🐳 Docker support
-- ❤️ Health-check endpoint
-- 🔒 Prevents access outside the configured media directory
-- 🌐 Works over LAN, Tailscale, WireGuard, or another VPN
+## 🐳 Docker
 
----
+```bash
+docker build -t subtitle-shifter .
 
-## 📸 How It Works
+docker run -d \
+  --name subtitle-shifter \
+  --restart unless-stopped \
+  -e MEDIA_ROOT=/media \
+  -e PORT=5070 \
+  -p 5070:5070 \
+  -v /mnt/media:/media:rw \
+  subtitle-shifter
+```
 
-Subtitle Shifter recursively scans your configured media directory and finds all `.srt` subtitle files.
+Open `http://SERVER_IP:5070`.
 
-There is no need to manually type file paths.
+## Updating
 
-Simply:
+Replace the project files, then rebuild and recreate the container with the commands above.
 
-1. Open Subtitle Shifter in your browser.
-2. Search for a movie, show, season, episode, or subtitle filename.
-3. Select the subtitle.
-4. Choose how much you want to shift it.
-5. Reload playback in Jellyfin, Plex, or your preferred media player.
+## Security
 
-That's it.
-
----
-
-## ⏱️ Subtitle Controls
-
-Quick controls are available directly in the interface:
-
-| Button | Effect |
-|---|---|
-| `-5 s` | Move subtitles 5 seconds earlier |
-| `-2 s` | Move subtitles 2 seconds earlier |
-| `-1 s` | Move subtitles 1 second earlier |
-| `-0.5 s` | Move subtitles 0.5 seconds earlier |
-| `+0.5 s` | Move subtitles 0.5 seconds later |
-| `+1 s` | Move subtitles 1 second later |
-| `+2 s` | Move subtitles 2 seconds later |
-| `+5 s` | Move subtitles 5 seconds later |
-
-You can also enter a custom value such as:
-
-```text
--1.7
+The app has no built-in authentication. Use LAN/VPN/Tailscale or an authenticated reverse proxy.
