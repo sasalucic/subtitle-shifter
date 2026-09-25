@@ -1,0 +1,13 @@
+services:
+  subtitle-shifter:
+    build: .
+    container_name: subtitle-shifter
+    restart: unless-stopped
+    environment:
+      MEDIA_ROOT: /media
+      PORT: 5070
+      PREVIEW_LINES: 80
+    ports:
+      - "5070:5070"
+    volumes:
+      - /mnt/media:/media:rw

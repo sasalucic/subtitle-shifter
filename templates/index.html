@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="bs">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#0f1115">
+  <title>Subtitle Shifter</title>
+  <style>
+    :root{--bg:#0f1115;--card:#171a21;--muted:#8f98a8;--text:#f5f7fb;--accent:#4f8cff;--line:#2a2f3a}
+    *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+    .wrap{max-width:900px;margin:auto;padding:18px}.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:14px}
+    h1{font-size:24px;margin:0 0 6px}.sub,.tiny{color:var(--muted)}.sub{margin-bottom:18px;font-size:14px}.tiny{font-size:12px}
+    input,button{font:inherit}input{width:100%;background:#0f131a;color:var(--text);border:1px solid var(--line);border-radius:12px;padding:12px 13px}
+    input:focus{outline:none;border-color:var(--accent)}button{border:0;border-radius:12px;padding:12px 10px;background:#252b36;color:var(--text);font-weight:650;cursor:pointer}
+    button.primary{background:var(--accent)}button.danger{background:#3a2025;color:#ffd6db}button:disabled{opacity:.45;cursor:not-allowed}
+    .quick{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px}.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .filelist{max-height:48vh;overflow:auto;margin-top:10px;border:1px solid var(--line);border-radius:12px}.file{padding:11px 12px;border-bottom:1px solid var(--line);cursor:pointer}
+    .file:last-child{border-bottom:0}.file:hover,.file.active{background:#202632}.fname{font-weight:650}.folder{color:var(--muted);font-size:12px;margin-top:3px;word-break:break-all}
+    .selected{word-break:break-all;font-size:14px;color:#dce5f5}.status{margin-top:10px;padding:10px;border-radius:10px;display:none}.status.ok{display:block;background:#173224;color:#bdf0cf}.status.err{display:block;background:#3a2025;color:#ffd1d7}
+    pre{white-space:pre-wrap;word-break:break-word;background:#0e1117;padding:12px;border-radius:12px;border:1px solid var(--line);max-height:32vh;overflow:auto;font-size:12px}.topline{display:flex;justify-content:space-between;gap:12px;align-items:center}.badge{font-size:12px;color:var(--muted)}
+    @media(max-width:640px){.row{grid-template-columns:1fr}.quick{grid-template-columns:repeat(2,1fr)}}
+  </style>
+</head>
+<body><div class="wrap">
+  <div class="topline"><div><h1>Subtitle Shifter</h1><div class="sub">Pomjeri .srt titlove bez ručnog kucanja putanja.</div></div><div class="badge">v{{ version }}</div></div>
+  <div class="card">
+    <input id="search" type="search" placeholder="Traži film, seriju, sezonu, epizodu...">
+    <div id="count" class="tiny" style="margin-top:8px">Učitavanje...</div><div id="files" class="filelist"></div>
+  </div>
+  <div class="card">
+    <div class="tiny">Odabrani titl</div><div id="selected" class="selected" style="margin:6px 0 14px">Nijedan fajl nije odabran.</div>
+    <div class="quick">
+      <button data-ms="-5000">−5 s</button><button data-ms="-2000">−2 s</button><button data-ms="-1000">−1 s</button><button data-ms="-500">−0.5 s</button>
+      <button data-ms="500">+0.5 s</button><button data-ms="1000">+1 s</button><button data-ms="2000">+2 s</button><button data-ms="5000">+5 s</button>
+    </div>
+    <div class="row" style="margin-top:12px"><div><div class="tiny" style="margin-bottom:6px">Custom offset (sekunde)</div><input id="custom" type="number" step="0.1" placeholder="npr. -1.7 ili 2.3"></div><div style="display:flex;align-items:end"><button id="applyCustom" class="primary" style="width:100%">Primijeni custom</button></div></div>
+    <div class="row" style="margin-top:10px"><button id="previewBtn">Preview titla</button><button id="restoreBtn" class="danger">Vrati original (.bak)</button></div>
+    <div id="status" class="status"></div>
+  </div>
+  <div class="card"><div class="tiny" style="margin-bottom:8px">Preview</div><pre id="preview">Odaberi titl i klikni Preview.</pre></div>
+</div>
+<script>
+let allFiles=[],selectedPath=null;const $=id=>document.getElementById(id),filesEl=$("files"),statusEl=$("status");
+function esc(s){return(s||"").replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
+function status(msg,ok=true){statusEl.className="status "+(ok?"ok":"err");statusEl.textContent=msg}
+function render(){const q=$("search").value.trim().toLowerCase(),f=allFiles.filter(x=>x.path.toLowerCase().includes(q));$("count").textContent=`${f.length} titlova`;filesEl.innerHTML=f.map(x=>`<div class="file ${selectedPath===x.path?'active':''}" data-p="${encodeURIComponent(x.path)}"><div class="fname">${esc(x.name)}</div><div class="folder">${esc(x.folder||'/')}${x.has_backup?' • backup postoji':''}</div></div>`).join('');filesEl.querySelectorAll('.file').forEach(el=>el.onclick=()=>{selectedPath=decodeURIComponent(el.dataset.p);$("selected").textContent=selectedPath;render();preview()})}
+async function load(){const r=await fetch('/api/files'),j=await r.json();if(!j.ok)throw new Error(j.error||'Greška');allFiles=j.files||[];render()}
+async function preview(){if(!selectedPath)return;const r=await fetch('/api/preview?path='+encodeURIComponent(selectedPath)),j=await r.json();$("preview").textContent=j.ok?j.preview:j.error;$("restoreBtn").disabled=!j.has_backup}
+async function shift(ms){if(!selectedPath){status('Prvo odaberi .srt fajl.',false);return}const r=await fetch('/api/shift',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({path:selectedPath,delta_ms:ms})}),j=await r.json();status(j.ok?`${j.message} • promijenjeno ${j.timestamps_changed} timestampova • backup: ${j.backup}`:j.error,!!j.ok);if(j.ok){await load();await preview()}}
+document.querySelectorAll('[data-ms]').forEach(b=>b.onclick=()=>shift(parseInt(b.dataset.ms,10)));
+$("applyCustom").onclick=()=>{const v=parseFloat($("custom").value);if(Number.isNaN(v)){status('Unesi broj sekundi, npr. -1.5 ili 2.0.',false);return}shift(Math.round(v*1000))};
+$("previewBtn").onclick=preview;$("restoreBtn").onclick=async()=>{if(!selectedPath){status('Prvo odaberi .srt fajl.',false);return}const r=await fetch('/api/restore',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({path:selectedPath})}),j=await r.json();status(j.ok?j.message:j.error,!!j.ok);if(j.ok){await load();await preview()}};$("search").oninput=render;load().catch(e=>status('Ne mogu učitati listu titlova: '+e,false));
+</script></body></html>
