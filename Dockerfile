@@ -5,8 +5,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY app.py .
 COPY templates ./templates
 ENV MEDIA_ROOT=/media
+ENV STREAMPORT_DB=/streamport/streamport.db
+ENV STREAMPORT_SUBTITLE_DIR=STREAMPORT_TITLOVI
 ENV PORT=5070
 ENV PREVIEW_LINES=80
 EXPOSE 5070
 HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 CMD python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5070/health', timeout=3)"
-CMD ["python","app.py"]
+CMD ["python", "app.py"]

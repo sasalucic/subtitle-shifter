@@ -5,9 +5,13 @@ services:
     restart: unless-stopped
     environment:
       MEDIA_ROOT: /media
+      STREAMPORT_DB: /streamport/streamport.db
+      STREAMPORT_SUBTITLE_DIR: ${STREAMPORT_SUBTITLE_DIR:-STREAMPORT_TITLOVI}
       PORT: 5070
-      PREVIEW_LINES: 80
+      PREVIEW_LINES: ${PREVIEW_LINES:-80}
     ports:
-      - "5070:5070"
+      - "${HOST_PORT:-5070}:5070"
     volumes:
-      - /mnt/media:/media:rw
+      - ${MEDIA_HOST_PATH:-/mnt/media}:/media:rw
+      - ${STREAMPORT_SUBTITLES_HOST_PATH:-/opt/streamport/data/subtitles}:/media/${STREAMPORT_SUBTITLE_DIR:-STREAMPORT_TITLOVI}:rw
+      - ${STREAMPORT_DATA_HOST_PATH:-/opt/streamport/data}:/streamport:ro
