@@ -1,15 +1,12 @@
 # Security
 
-Subtitle Shifter je napravljen kao privatni admin alat za LAN/VPN okruženje.
+Subtitle Shifter is intended for a trusted LAN/VPN environment.
 
-Aplikacija trenutno nema ugrađen login ili role-based access control i namjerno dobija write pristup subtitle direktorijima kako bi mogla mijenjati `.srt`/`.vtt` i praviti `.bak` fajlove.
-
-Zato:
-
-- nemoj port 5070 direktno port-forwardati na javni internet,
-- koristi LAN, Tailscale/WireGuard/VPN ili reverse proxy sa autentikacijom,
-- StreamPort data folder je mountan `:ro`; samo subtitle folder je `:rw`,
-- čuvaj Docker pristup samo za pouzdane admin korisnike,
-- prije većih promjena na media storageu imaj normalan server backup; `.bak` u ovoj aplikaciji nije zamjena za kompletan backup.
-
-Path handling u aplikaciji ograničava API operacije na `MEDIA_ROOT`, ali to nije razlog da servis bude javno izložen bez autentikacije.
+- The app has no built-in authentication.
+- Do not expose the service directly to the public internet.
+- Keep StreamPort metadata/database storage read-only.
+- Keep only subtitle/media directories that must be edited read-write.
+- Keep `.env` local and out of Git.
+- Do not commit private IP addresses, credentials, tokens, secrets, or machine-specific sensitive paths.
+- Treat Docker daemon access as privileged/root-equivalent access.
+- Keep normal server backups; subtitle `.bak` files are not a full backup solution.

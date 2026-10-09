@@ -6,7 +6,7 @@ import shutil
 import sqlite3
 import tempfile
 
-APP_VERSION = "1.2.2"
+APP_VERSION = "1.2.3"
 
 app = Flask(__name__)
 
@@ -174,21 +174,24 @@ def list_subtitle_files():
     discovered = []
     streamport_ids = []
 
-    for p in MEDIA_ROOT.rglob("*"):
-        if not p.is_file() or not is_supported_subtitle(p):
-            continue
+    # Scan only supported subtitle extensions. Avoid walking every file in large
+    # media libraries (music, video, downloads, etc.) and filtering afterward.
+    for pattern in ("*.srt", "*.vtt"):
+        for p in MEDIA_ROOT.rglob(pattern):
+            if not p.is_file():
+                continue
 
-        try:
-            rel = p.relative_to(MEDIA_ROOT)
-            stat = p.stat()
-        except (ValueError, OSError):
-            continue
+            try:
+                rel = p.relative_to(MEDIA_ROOT)
+                stat = p.stat()
+            except (ValueError, OSError):
+                continue
 
-        streamport = parse_streamport_vtt(rel)
-        if streamport:
-            streamport_ids.append(streamport["media_id"])
+            streamport = parse_streamport_vtt(rel)
+            if streamport:
+                streamport_ids.append(streamport["media_id"])
 
-        discovered.append((p, rel, stat, streamport))
+            discovered.append((p, rel, stat, streamport))
 
     media_map = load_streamport_media(streamport_ids)
     files = []

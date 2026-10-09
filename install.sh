@@ -33,12 +33,12 @@ fi
 [[ -d "$STREAMPORT_SUBTITLES_HOST_PATH" ]] || { echo "ERROR: StreamPort subtitle directory does not exist: $STREAMPORT_SUBTITLES_HOST_PATH" >&2; exit 1; }
 [[ -f "$STREAMPORT_DATA_HOST_PATH/streamport.db" ]] || { echo "ERROR: StreamPort database not found: $STREAMPORT_DATA_HOST_PATH/streamport.db" >&2; exit 1; }
 
-echo "Building Subtitle Shifter v1.2.2..."
-docker build -t subtitle-shifter:1.2.2 -t subtitle-shifter:latest .
+echo "Building Subtitle Shifter v1.2.3..."
+docker build -t subtitle-shifter:1.2.3 -t subtitle-shifter:latest .
 
 docker rm -f subtitle-shifter >/dev/null 2>&1 || true
 
-docker run -d   --name subtitle-shifter   --restart unless-stopped   -e MEDIA_ROOT=/media   -e STREAMPORT_DB=/streamport/streamport.db   -e STREAMPORT_SUBTITLE_DIR="$STREAMPORT_SUBTITLE_DIR"   -e PORT=5070   -e PREVIEW_LINES="$PREVIEW_LINES"   -p "$HOST_PORT:5070"   -v "$MEDIA_HOST_PATH:/media:rw"   -v "$STREAMPORT_SUBTITLES_HOST_PATH:/media/$STREAMPORT_SUBTITLE_DIR:rw"   -v "$STREAMPORT_DATA_HOST_PATH:/streamport:ro"   subtitle-shifter:1.2.2 >/dev/null
+docker run -d   --name subtitle-shifter   --restart unless-stopped   -e MEDIA_ROOT=/media   -e STREAMPORT_DB=/streamport/streamport.db   -e STREAMPORT_SUBTITLE_DIR="$STREAMPORT_SUBTITLE_DIR"   -e PORT=5070   -e PREVIEW_LINES="$PREVIEW_LINES"   -p "$HOST_PORT:5070"   -v "$MEDIA_HOST_PATH:/media:rw"   -v "$STREAMPORT_SUBTITLES_HOST_PATH:/media/$STREAMPORT_SUBTITLE_DIR:rw"   -v "$STREAMPORT_DATA_HOST_PATH:/streamport:ro"   subtitle-shifter:1.2.3 >/dev/null
 
-echo "Subtitle Shifter v1.2.2 started."
+echo "Subtitle Shifter v1.2.3 started."
 echo "Health check: http://127.0.0.1:$HOST_PORT/health"

@@ -1,14 +1,14 @@
-# Subtitle Shifter v1.2.2
+# Subtitle Shifter v1.2.3
 
-Subtitle Shifter is a lightweight self-hosted web app for shifting `.srt` and `.vtt` subtitle timing directly on a media server.
+Subtitle Shifter is a lightweight self-hosted web app for permanently shifting `.srt` and `.vtt` subtitle timing from a browser.
 
-It also supports **StreamPort** subtitle metadata lookup. A physical file such as:
+It also supports **StreamPort** metadata lookup. A physical subtitle filename such as:
 
 ```text
 42.en.1234567.vtt
 ```
 
-can be shown in the UI as:
+can be displayed as:
 
 ```text
 Example Show — S01E02 — Example Episode
@@ -19,48 +19,36 @@ The physical VTT filename is never renamed.
 ## Features
 
 - SRT and VTT support
-- Quick offsets: ±0.5 s, ±1 s, ±2 s, ±5 s
-- Custom offset input
+- Quick shifts: ±0.5 s, ±1 s, ±2 s, ±5 s
+- Custom decimal-second offsets
 - Automatic `.bak` backup before the first modification
 - One-click restore from `.bak`
 - Subtitle preview
 - English / Serbian UI
-- Search by path, media title, season/episode and subtitle language
-- StreamPort VTT metadata lookup via SQLite
-- Read-only access to `streamport.db`
-- SQLite WAL/read-only fallbacks: direct RO → immutable RO → temporary snapshot
+- Search by file path, media title, season/episode and subtitle language
+- StreamPort VTT metadata lookup through `streamport.db`
+- Read-only StreamPort database access
+- SQLite read-only/WAL fallbacks: direct RO → immutable RO → temporary snapshot
+- Efficient subtitle-only scan (`*.srt` and `*.vtt`) for large media libraries
 - Docker health check
 
 ## Quick start
 
-Clone the repository:
-
 ```bash
 git clone https://github.com/sasalucic/subtitle-shifter.git
 cd subtitle-shifter
-```
-
-Create your local configuration:
-
-```bash
 cp .env.example .env
 nano .env
-```
-
-Set the host paths for your media and StreamPort installation, then run:
-
-```bash
-chmod +x install.sh
 sudo ./install.sh
 ```
 
-Verify the service:
+Verify:
 
 ```bash
 curl http://127.0.0.1:5070/health
 ```
 
-Open:
+Open from a trusted network:
 
 ```text
 http://SERVER_IP:5070
@@ -68,7 +56,7 @@ http://SERVER_IP:5070
 
 ## Configuration
 
-Example `.env`:
+Example local `.env`:
 
 ```dotenv
 MEDIA_HOST_PATH=/path/to/media
@@ -83,25 +71,13 @@ PREVIEW_LINES=80
 
 ## StreamPort mapping
 
-Expected VTT filename pattern:
+Expected filename pattern:
 
 ```text
 <media_id>.<language>.<subtitle_id>.vtt
 ```
 
-The first number is looked up in the StreamPort `media` table:
-
-```sql
-SELECT id, title, kind, series, season, episode, episode_title, year, path
-FROM media
-WHERE id = ?;
-```
-
-## Docker Compose
-
-```bash
-docker compose up -d --build
-```
+The first number is matched against the StreamPort `media` table. The UI uses the returned media metadata to build a human-readable title while leaving the physical VTT filename unchanged.
 
 ## Documentation
 
@@ -113,8 +89,8 @@ docker compose up -d --build
 
 ## Security
 
-The app has no built-in authentication and needs write access to subtitle directories. Do **not** expose port `5070` directly to the public internet. Use a LAN, VPN/Tailscale/WireGuard, or an authenticated reverse proxy.
+The app has no built-in authentication and requires write access to subtitle directories. Do **not** expose it directly to the public internet. Use a trusted LAN, VPN/Tailscale/WireGuard, or an authenticated reverse proxy.
 
 ## Version
 
-`1.2.2`
+`1.2.3`
